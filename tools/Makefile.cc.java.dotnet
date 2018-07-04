@@ -38,7 +38,7 @@ JAVAC_BIN = javac
 JAVA_BIN = java
 
 # Unix specific part.
-ifeq ("$(SYSTEM)","unix")
+ifeq ($(SYSTEM),unix)
 	# Defines OR_TOOLS_TOP if it is not already defined.
 	OR_TOOLS_TOP ?= $(shell pwd)
 	OS = $(shell uname -s)
@@ -92,10 +92,10 @@ ifeq ("$(SYSTEM)","unix")
 		$(CBC_INC) $(CLP_INC) $(GLOP_INC) $(BOP_INC)
 	WHICH = which
 	TO_NULL = 2\> /dev/null
-endif
+endif # SYSTEM == unix
 
 # Windows specific part.
-ifeq ("$(SYSTEM)","win")
+ifeq ($(SYSTEM),win)
 	ifeq ("$(Platform)", "X64")
 		PLATFORM = Win64
 	endif
@@ -138,7 +138,7 @@ ifeq ("$(SYSTEM)","win")
 	MONO=
 	WHICH = where
 	TO_NULL = 2> NUL
-endif
+endif # SYSTEM == win
 
 OR_TOOLS_LIBS = $(LIB_DIR)/$(LIB_PREFIX)ortools.$L
 CVRPTW_LIBS = $(LIB_DIR)/$(LIB_PREFIX)cvrptw_lib.$L
@@ -196,17 +196,17 @@ test_cc: $(BIN_DIR)/golomb$E $(BIN_DIR)/cvrptw$E
 	$(BIN_DIR)$Sgolomb$E
 	$(BIN_DIR)/cvrptw$E
 # C++ generic running command
-  ifeq ($(EX),)
+ifeq ($(EX),)
 ccc rcc:
 	@echo No C++ file was provided, the $@ target must be used like so: \
 	make $@ EX=path/to/the/example/example.cc
-  else
+else
 ccc: $(BIN_DIR)$S$(basename $(notdir $(EX)))$E
 
 rcc: $(BIN_DIR)$S$(basename $(notdir $(EX)))$E
 	@echo running $(BIN_DIR)$S$(basename $(notdir $(EX)))$E
 	$(BIN_DIR)$S$(basename $(notdir $(EX)))$E $(ARGS)
-  endif
+endif
 endif
 
 ifeq ($(shell $(WHICH) java $(TO_NULL)),)
@@ -219,11 +219,11 @@ test_java:
 	@echo $(WHICH) javaa $(TO_NULL)
 
 # Java generic compilation command.
-  ifeq ($(EX),)
+ifeq ($(EX),)
 rjava cjava:
 	@echo No java file was provided, the rjava target must be used like so: \
 	make rjava EX=path/to/the/example/example.java
-  else
+else
     ifeq ($(SYSTEM),win)
       EX_read_package = $(shell findstr /r "^package.*\;" $(EX))
     else
@@ -245,7 +245,7 @@ cjava: $(EX_class_file)
 
 rjava: $(EX_class_file)
 	$(JAVA_BIN) -Djava.library.path=$(LIB_DIR) -cp $(OBJ_DIR)$(CPSEP)$(LIB_DIR)$Scom.google.ortools.jar$(CPSEP)$(LIB_DIR)$Sprotobuf.jar $(EX_class) $(ARGS)
-  endif
+endif
 endif
 
 ifeq ($(shell $(WHICH) $(CSC) $(TO_NULL)),)
@@ -258,11 +258,11 @@ test_cs:
 
 test: test_cc test_java test_cs
 
-  ifeq ($(EX),)
+ifeq ($(EX),)
 rcs:
 	@echo No csharp file was provided, the rcs target must be used like so: \
 	make rcs EX=path/to/the/example/example.cs
-  else
+else
 # .NET generic compilation command.
 $(BIN_DIR)$S$(basename $(notdir $(EX))).exe: $(BIN_DIR)/$(CLR_DLL_NAME).dll $(EX)
 	$(CSC) $(SIGNING_FLAGS) /target:exe /out:$(BIN_DIR)$S$(basename $(notdir $(EX))).exe /platform:$(NETPLATFORM) /lib:$(BIN_DIR) /r:$(CLR_DLL_NAME).dll /r:Google.Protobuf.dll $(EX)
@@ -272,9 +272,8 @@ csc: $(BIN_DIR)$S$(basename $(notdir $(EX))).exe
 rcs: $(BIN_DIR)$S$(basename $(notdir $(EX))).exe
 	@echo running $(BIN_DIR)$S$(basename $(notdir $(EX))).exe
 	$(MONO) $(BIN_DIR)$S$(basename $(notdir $(EX))).exe $(ARGS)
-  endif
 endif
-
+endif
 
 # Constraint Programming and Routing examples.
 
